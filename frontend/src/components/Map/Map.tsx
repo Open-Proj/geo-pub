@@ -1,8 +1,16 @@
 import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import { useGeolocated } from "react-geolocated";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Alert } from "@heroui/react";
+
+interface Pondering {
+    id: number;
+    pondering: string;
+    lat: number;
+    lng: number;
+    created_at: string;
+}
 
 function MapUpdater({ center }: { center: [number, number] }) {
     const map = useMap();
@@ -13,6 +21,8 @@ function MapUpdater({ center }: { center: [number, number] }) {
 }
 
 export function Map() {
+    const [ponderings, setPonderings] = useState<Pondering[]>([]);
+
     // Get user position
     const { coords, isGeolocationAvailable, isGeolocationEnabled, positionError } = useGeolocated({
         positionOptions: {
@@ -32,13 +42,34 @@ export function Map() {
         ? [coords.latitude, coords.longitude]
         : defaultCenter;
 
+    // Fetch ponderings near current location
+    useEffect(() => {
+        const fetchPonderings = async () => {
+            try {
+                const [lat, lng] = center;
+                const response = await fetch(
+                    `http://localhost:8000/visions/near?lat=${lat}&lng=${lng}&radius=50000`
+                );
+                const data = await response.json();
+                setPonderings(data.visions || []);
+            } catch (error) {
+                console.error('Failed to fetch ponderings:', error);
+            }
+        };
+
+        fetchPonderings();
+        const interval = setInterval(fetchPonderings, 10000);
+        return () => clearInterval(interval);
+    }, [center]);
+
     // Add debug logging
     console.log('Geolocation state:', {
         coords,
         isGeolocationAvailable,
         isGeolocationEnabled,
         positionError,
-        center
+        center,
+        ponderings
     });
 
     return (
@@ -74,6 +105,13 @@ export function Map() {
                         {coords ? 'Your location' : 'Default location (London)'}
                     </Popup>
                 </Marker>
+                {ponderings.map((pondering) => (
+                    <Marker key={pondering.id} position={[pondering.lat, pondering.lng]}>
+                        <Popup>
+                            🔮 {pondering.pondering}
+                        </Popup>
+                    </Marker>
+                ))}
             </MapContainer>
         </div>
     );

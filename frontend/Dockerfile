@@ -6,4 +6,4 @@ WORKDIR /app
 EXPOSE 5173
 
 # Install dependencies and start development server
-CMD ["sh", "-c", "npm install && npm run dev"]
+CMD ["sh", "-c", "npm install && npx vite --host"]
