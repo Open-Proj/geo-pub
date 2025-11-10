@@ -1,8 +1,10 @@
 import "leaflet/dist/leaflet.css";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import { useGeolocated } from "react-geolocated";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Alert } from "@heroui/react";
+
+const LOCAL_STORAGE_CENTER = "map.center";
 
 interface Pondering {
     id: number;
@@ -12,11 +14,16 @@ interface Pondering {
     created_at: string;
 }
 
-function MapUpdater({ center }: { center: [number, number] }) {
-    const map = useMap();
-    useEffect(() => {
-        map.setView(center, map.getZoom());
-    }, [center, map]);
+// Component to handle map events
+function MapEventHandler({ onMoveEnd }: { onMoveEnd: (center: [number, number, number]) => void }) {
+    useMapEvents({
+        moveend: (e) => {
+            const map = e.target;
+            const center = map.getCenter();
+            const zoom = map.getZoom();
+            onMoveEnd([zoom, center.lat, center.lng]);
+        }
+    });
     return null;
 }
 
@@ -24,7 +31,7 @@ export function Map() {
     const [ponderings, setPonderings] = useState<Pondering[]>([]);
 
     // Get user position
-    const { coords, isGeolocationAvailable, isGeolocationEnabled, positionError } = useGeolocated({
+    const { coords: realCoords, isGeolocationAvailable, isGeolocationEnabled, positionError } = useGeolocated({
         positionOptions: {
             enableHighAccuracy: false,
             timeout: 10000,
@@ -35,18 +42,38 @@ export function Map() {
         suppressLocationOnMount: false,
     });
 
-    // Default to London, use user location if available
-    // Note: Leaflet uses [latitude, longitude] order
-    const defaultCenter: [number, number] = [51.505, -0.09];
-    const center: [number, number] = coords
-        ? [coords.latitude, coords.longitude]
-        : defaultCenter;
+    const defaultCenter = useMemo(() => realCoords || [13, 51.505, -0.09], [realCoords]);
+    const storedCenter = localStorage.getItem(LOCAL_STORAGE_CENTER);
+    const [ center, setCenter ] = useState(storedCenter !== null ? JSON.parse(storedCenter) : defaultCenter);
+
+    useEffect(() => {
+        // Save current center when user leaves page
+        return () => {
+            localStorage.setItem(LOCAL_STORAGE_CENTER, JSON.stringify(center));
+        };
+    });
+
+    // Get more detailed error message
+    const getErrorMessage = (error: GeolocationPositionError | undefined) => {
+        if (!error) return '';
+
+        switch (error.code) {
+            case error.PERMISSION_DENIED:
+                return 'Location permission denied. Please allow location access in your browser settings.';
+            case error.POSITION_UNAVAILABLE:
+                return 'Location information unavailable. Please check your device location settings.';
+            case error.TIMEOUT:
+                return 'Location request timed out. Please try again.';
+            default:
+                return error.message || 'Unable to get your location. Showing default location.';
+        }
+    };
 
     // Fetch ponderings near current location
     useEffect(() => {
         const fetchPonderings = async () => {
             try {
-                const [lat, lng] = center;
+                const [zoom, lat, lng] = center;
                 const response = await fetch(
                     `http://localhost:8000/visions/near?lat=${lat}&lng=${lng}&radius=50000`
                 );
@@ -62,9 +89,8 @@ export function Map() {
         return () => clearInterval(interval);
     }, [center]);
 
-    // Add debug logging
     console.log('Geolocation state:', {
-        coords,
+        realCoords,
         isGeolocationAvailable,
         isGeolocationEnabled,
         positionError,
@@ -77,32 +103,47 @@ export function Map() {
             {/* Geolocation alerts */}
             <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] w-full max-w-md px-4 space-y-2">
                 {!isGeolocationAvailable && (
-                    <Alert color="danger" variant="faded" title="Geolocation Not Supported">
+                    <Alert
+                        color="danger"
+                        variant="faded"
+                        title="Geolocation Not Supported"
+                        classNames={{
+                            base: "bg-red-50 border border-red-200"
+                        }}
+                    >
                         Your browser doesn't support geolocation
                     </Alert>
                 )}
 
                 {positionError && (
-                    <Alert color="warning" variant="faded" title="Location Error">
-                        {positionError.message || 'Could not get your location. Showing default location.'}
+                    <Alert
+                        color="warning"
+                        variant="faded"
+                        title="Location Error"
+                        isClosable
+                        classNames={{
+                            base: "bg-yellow-50 border border-yellow-200"
+                        }}
+                    >
+                        {getErrorMessage(positionError)}
                     </Alert>
                 )}
             </div>
 
             <MapContainer
-                center={defaultCenter}
-                zoom={13}
+                center={[center[1], center[2]]}
+                zoom={center[0]}
                 scrollWheelZoom={true}
                 className="h-full w-full"
             >
-                <MapUpdater center={center} />
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-                <Marker position={center}>
+                <MapEventHandler onMoveEnd={setCenter} />
+                <Marker position={[center[1], center[2]]}>
                     <Popup>
-                        {coords ? 'Your location' : 'Default location (London)'}
+                        {realCoords ? 'Your location' : 'Default location (London)'}
                     </Popup>
                 </Marker>
                 {ponderings.map((pondering) => (
