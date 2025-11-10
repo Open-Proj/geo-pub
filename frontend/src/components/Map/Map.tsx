@@ -41,19 +41,50 @@ export function Map() {
         center
     });
 
+    // Get more detailed error message
+    const getErrorMessage = (error: GeolocationPositionError | undefined) => {
+        if (!error) return '';
+
+        switch (error.code) {
+            case error.PERMISSION_DENIED:
+                return 'Location permission denied. Please allow location access in your browser settings.';
+            case error.POSITION_UNAVAILABLE:
+                return 'Location information unavailable. Please check your device location settings.';
+            case error.TIMEOUT:
+                return 'Location request timed out. Please try again.';
+            default:
+                return error.message || 'Unable to get your location. Showing default location.';
+        }
+    };
+
     return (
         <div className="h-screen w-full">
             {/* Geolocation alerts */}
             <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] w-full max-w-md px-4 space-y-2">
                 {!isGeolocationAvailable && (
-                    <Alert color="danger" variant="faded" title="Geolocation Not Supported">
+                    <Alert
+                        color="danger"
+                        variant="faded"
+                        title="Geolocation Not Supported"
+                        classNames={{
+                            base: "bg-red-50 border border-red-200"
+                        }}
+                    >
                         Your browser doesn't support geolocation
                     </Alert>
                 )}
 
                 {positionError && (
-                    <Alert color="warning" variant="faded" title="Location Error">
-                        {positionError.message || 'Could not get your location. Showing default location.'}
+                    <Alert
+                        color="warning"
+                        variant="faded"
+                        title="Location Error"
+                        isClosable
+                        classNames={{
+                            base: "bg-yellow-50 border border-yellow-200"
+                        }}
+                    >
+                        {getErrorMessage(positionError)}
                     </Alert>
                 )}
             </div>
