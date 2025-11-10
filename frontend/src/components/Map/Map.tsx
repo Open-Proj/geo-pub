@@ -2,10 +2,17 @@ import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import { useGeolocated } from "react-geolocated";
 import { useEffect, useState, useMemo } from "react";
-import { Alert, Button } from "@heroui/react";
-import type { Map as LeafletMap } from "leaflet";
+import { Alert } from "@heroui/react";
 
 const LOCAL_STORAGE_CENTER = "map.center";
+
+interface Pondering {
+    id: number;
+    pondering: string;
+    lat: number;
+    lng: number;
+    created_at: string;
+}
 
 // Component to handle map events
 function MapEventHandler({ onMoveEnd }: { onMoveEnd: (center: [number, number, number]) => void }) {
@@ -21,20 +28,29 @@ function MapEventHandler({ onMoveEnd }: { onMoveEnd: (center: [number, number, n
 }
 
 export function Map() {
+    const [ponderings, setPonderings] = useState<Pondering[]>([]);
+
     // Get user position
-    const { coords: realCoords, isGeolocationAvailable, isGeolocationEnabled, positionError } = useGeolocated();
+    const { coords: realCoords, isGeolocationAvailable, isGeolocationEnabled, positionError } = useGeolocated({
+        positionOptions: {
+            enableHighAccuracy: false,
+            timeout: 10000,
+            maximumAge: 0,
+        },
+        userDecisionTimeout: 10000,
+        watchPosition: false,
+        suppressLocationOnMount: false,
+    });
 
     const defaultCenter = useMemo(() => realCoords || [13, 51.505, -0.09], [realCoords]);
     const storedCenter = localStorage.getItem(LOCAL_STORAGE_CENTER);
     const [ center, setCenter ] = useState(storedCenter !== null ? JSON.parse(storedCenter) : defaultCenter);
+
     useEffect(() => {
-        // Save current center when use leaves page
+        // Save current center when user leaves page
         return () => {
             localStorage.setItem(LOCAL_STORAGE_CENTER, JSON.stringify(center));
         };
-    });
-    console.table({
-        defaultCenter, center, storedCenter
     });
 
     // Get more detailed error message
@@ -52,6 +68,35 @@ export function Map() {
                 return error.message || 'Unable to get your location. Showing default location.';
         }
     };
+
+    // Fetch ponderings near current location
+    useEffect(() => {
+        const fetchPonderings = async () => {
+            try {
+                const [zoom, lat, lng] = center;
+                const response = await fetch(
+                    `http://localhost:8000/visions/near?lat=${lat}&lng=${lng}&radius=50000`
+                );
+                const data = await response.json();
+                setPonderings(data.visions || []);
+            } catch (error) {
+                console.error('Failed to fetch ponderings:', error);
+            }
+        };
+
+        fetchPonderings();
+        const interval = setInterval(fetchPonderings, 10000);
+        return () => clearInterval(interval);
+    }, [center]);
+
+    console.log('Geolocation state:', {
+        realCoords,
+        isGeolocationAvailable,
+        isGeolocationEnabled,
+        positionError,
+        center,
+        ponderings
+    });
 
     return (
         <div className="h-screen w-full">
@@ -96,11 +141,18 @@ export function Map() {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
                 <MapEventHandler onMoveEnd={setCenter} />
-                <Marker position={center}>
+                <Marker position={[center[1], center[2]]}>
                     <Popup>
-                        {center ? 'Your location' : 'Default location (London)'}
+                        {realCoords ? 'Your location' : 'Default location (London)'}
                     </Popup>
                 </Marker>
+                {ponderings.map((pondering) => (
+                    <Marker key={pondering.id} position={[pondering.lat, pondering.lng]}>
+                        <Popup>
+                            🔮 {pondering.pondering}
+                        </Popup>
+                    </Marker>
+                ))}
             </MapContainer>
         </div>
     );
