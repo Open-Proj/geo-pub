@@ -9,5 +9,33 @@ services:
       - POSTGRES_USER=geo-pub-dev
       - POSTGRES_PASSWORD=geo-pub-dev
       - POSTGRES_DB=geo_pub_dev
+
+  geopub:
+    build:
+      context: ./geopub
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    volumes:
+      - ./geopub:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://geo-pub-dev:geo-pub-dev@postgres:5432/geo_pub_dev
+    depends_on:
+      - postgres
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - 5173:5173
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+
 volumes:
   pgdata: {}
