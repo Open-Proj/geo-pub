@@ -1,44 +1,40 @@
 import "leaflet/dist/leaflet.css";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import { useGeolocated } from "react-geolocated";
-import { useEffect } from "react";
-import { Alert } from "@heroui/react";
+import { useEffect, useState, useMemo } from "react";
+import { Alert, Button } from "@heroui/react";
+import type { Map as LeafletMap } from "leaflet";
 
-function MapUpdater({ center }: { center: [number, number] }) {
-    const map = useMap();
-    useEffect(() => {
-        map.setView(center, map.getZoom());
-    }, [center, map]);
+const LOCAL_STORAGE_CENTER = "map.center";
+
+// Component to handle map events
+function MapEventHandler({ onMoveEnd }: { onMoveEnd: (center: [number, number, number]) => void }) {
+    useMapEvents({
+        moveend: (e) => {
+            const map = e.target;
+            const center = map.getCenter();
+            const zoom = map.getZoom();
+            onMoveEnd([zoom, center.lat, center.lng]);
+        }
+    });
     return null;
 }
 
 export function Map() {
     // Get user position
-    const { coords, isGeolocationAvailable, isGeolocationEnabled, positionError } = useGeolocated({
-        positionOptions: {
-            enableHighAccuracy: false,
-            timeout: 10000,
-            maximumAge: 0,
-        },
-        userDecisionTimeout: 10000,
-        watchPosition: false,
-        suppressLocationOnMount: false,
+    const { coords: realCoords, isGeolocationAvailable, isGeolocationEnabled, positionError } = useGeolocated();
+
+    const defaultCenter = useMemo(() => realCoords || [13, 51.505, -0.09], [realCoords]);
+    const storedCenter = localStorage.getItem(LOCAL_STORAGE_CENTER);
+    const [ center, setCenter ] = useState(storedCenter !== null ? JSON.parse(storedCenter) : defaultCenter);
+    useEffect(() => {
+        // Save current center when use leaves page
+        return () => {
+            localStorage.setItem(LOCAL_STORAGE_CENTER, JSON.stringify(center));
+        };
     });
-
-    // Default to London, use user location if available
-    // Note: Leaflet uses [latitude, longitude] order
-    const defaultCenter: [number, number] = [51.505, -0.09];
-    const center: [number, number] = coords
-        ? [coords.latitude, coords.longitude]
-        : defaultCenter;
-
-    // Add debug logging
-    console.log('Geolocation state:', {
-        coords,
-        isGeolocationAvailable,
-        isGeolocationEnabled,
-        positionError,
-        center
+    console.table({
+        defaultCenter, center, storedCenter
     });
 
     // Get more detailed error message
@@ -90,19 +86,19 @@ export function Map() {
             </div>
 
             <MapContainer
-                center={defaultCenter}
-                zoom={13}
+                center={[center[1], center[2]]}
+                zoom={center[0]}
                 scrollWheelZoom={true}
                 className="h-full w-full"
             >
-                <MapUpdater center={center} />
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
+                <MapEventHandler onMoveEnd={setCenter} />
                 <Marker position={center}>
                     <Popup>
-                        {coords ? 'Your location' : 'Default location (London)'}
+                        {center ? 'Your location' : 'Default location (London)'}
                     </Popup>
                 </Marker>
             </MapContainer>
