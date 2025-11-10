@@ -1,0 +1,13 @@
+services:
+  postgres:
+    image: postgis/postgis:18-3.6-alpine
+    volumes:
+      - pgdata:/var/lib/postgresql
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=geo-pub-dev
+      - POSTGRES_PASSWORD=geo-pub-dev
+      - POSTGRES_DB=geo_pub_dev
+volumes:
+  pgdata: {}
