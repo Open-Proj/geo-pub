@@ -1,10 +1,15 @@
 {
+  "type": "module",
   "unstable": [ "temporal" ],
   "tasks": {
-    "dev": "deno run --allow-net=0.0.0.0:8000 --watch ./src/server.ts"
+    "dev": "deno run --allow-net=0.0.0.0:8000 --allow-env --watch ./src/server.ts"
   },
   "imports": {
     "@fedify/fedify": "jsr:@fedify/fedify@^1.1.0",
-    "@std/assert": "jsr:@std/assert@1"
+    "@fedify/postgres": "jsr:@fedify/postgres@^1.9.1",
+    "@logtape/logtape": "jsr:@logtape/logtape@^1.2.0",
+    "@std/assert": "jsr:@std/assert@1",
+    "zod": "npm:zod@^4.1.12",
+    "postgres": "npm:postgres@^3.4.7"
   }
 }

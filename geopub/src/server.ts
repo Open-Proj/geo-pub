@@ -1,5 +1,15 @@
-Deno.serve(request =>
-  new Response("Hello, world", {
-    headers: { "Content-Type": "text/plain" }
-  })
-);
+import { configure, getConsoleSink } from "@logtape/logtape";
+import { federation } from "./federation.ts";
+
+// Configure logging
+await configure({
+  sinks: { console: getConsoleSink() },
+  filters : {},
+  loggers: [
+    { category: "fedify",  sinks: ["console"], lowestLevel: "info" },
+    { category: [ "logtape", "meta" ], sinks: ["console"], lowestLevel: "warning" },
+  ],
+});
+
+// Run server
+Deno.serve(request => federation.fetch(request, { contextData: undefined }));
