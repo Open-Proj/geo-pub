@@ -1,4 +1,4 @@
-FROM node:22-alpine
+FROM denoland/deno:alpine-2.5.6
 
 WORKDIR /app
 
@@ -6,4 +6,4 @@ WORKDIR /app
 EXPOSE 8000
 
 # Install dependencies and start development server
-CMD ["sh", "-c", "npm install && npm run dev"]
+CMD [ "deno", "run", "dev" ]
