@@ -11,6 +11,7 @@
     "@std/assert": "jsr:@std/assert@1",
     "zod": "npm:zod@^4.1.12",
     "postgres": "npm:postgres@^3.4.7",
-    "prisma": "npm:primsa@^6.19.0"
+    "prisma": "npm:primsa@^6.19.0",
+    "dotenv": "npm:dotenv@^17.2.3"
   }
 }

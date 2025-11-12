@@ -448,6 +448,7 @@
       "jsr:@fedify/postgres@^1.9.1",
       "jsr:@logtape/logtape@^1.2.0",
       "jsr:@std/assert@1",
+      "npm:dotenv@^17.2.3",
       "npm:postgres@^3.4.7",
       "npm:primsa@^6.19.0",
       "npm:zod@^4.1.12"
