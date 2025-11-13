@@ -12,7 +12,7 @@ export const federation = createFederation<void>({
 
 federation.setActorDispatcher("/users/{identifier}", async (ctx, identifier) => {
   const user = await getUserByPublicID(identifier);
-  if (user === undefined) {
+  if (user === null) {
     return null;
   }
 
