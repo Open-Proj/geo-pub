@@ -15,6 +15,7 @@
     "@logtape/logtape": "jsr:@logtape/logtape@^1.2.0",
     "@prisma/client": "npm:@prisma/client@^6.19.0",
     "@std/assert": "jsr:@std/assert@1",
+    "hono": "npm:hono@^4.10.5",
     "zod": "npm:zod@^4.1.12",
     "postgres": "npm:postgres@^3.4.7",
     "dotenv": "npm:dotenv@^17.2.3"

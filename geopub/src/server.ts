@@ -1,5 +1,4 @@
 import { configure, getConsoleSink } from "@logtape/logtape";
-import { Hono } from "hono";
 import { federation } from "./federation.ts";
 import { api } from "./api/index.ts";
 
