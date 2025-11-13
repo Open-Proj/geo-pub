@@ -5,12 +5,15 @@
     "dev": "deno run --allow-net=0.0.0.0:8000 --allow-env --allow-read --allow-ffi --watch ./src/server.ts",
     "prisma:generate": "deno run -A 'npm:prisma' generate",
     "prisma:migrate": "deno run -A 'npm:prisma' migrate dev",
+    "prisma:migrate:create": "deno run -A 'npm:prisma' migrate dev --create-only",
     "prisma:migrate:reset": "deno run -A 'npm:prisma' migrate reset"
   },
   "imports": {
     "@fedify/fedify": "jsr:@fedify/fedify@^1.1.0",
     "@fedify/postgres": "jsr:@fedify/postgres@^1.9.1",
     "@hono/hono": "jsr:@hono/hono@^4.10.5",
+    "@hono/swagger-ui": "npm:@hono/swagger-ui@^0.5.2",
+    "@hono/zod-openapi": "npm:@hono/zod-openapi@^1.1.4",
     "@hono/zod-validator": "npm:@hono/zod-validator@^0.7.4",
     "@logtape/logtape": "jsr:@logtape/logtape@^1.2.0",
     "@prisma/client": "npm:@prisma/client@^6.19.0",

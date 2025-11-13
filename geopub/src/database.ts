@@ -1,6 +1,14 @@
-import { PrismaClient } from "./generated/prisma/client.ts";
+import { PrismaClient, Prisma } from "./generated/prisma/client.ts";
 
 export const prisma = new PrismaClient();
+
+// Prisma error codes
+export const PrismaErrorCode = {
+  UNIQUE_CONSTRAINT_VIOLATION: "P2002",
+} as const;
+
+// Re-export Prisma namespace for error types
+export { Prisma };
 
 // Graceful shutdown handler
 async function shutdown(signal: string) {
