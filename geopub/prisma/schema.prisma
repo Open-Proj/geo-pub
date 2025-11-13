@@ -11,7 +11,7 @@ datasource db {
 
 model User {
   id  Int @id @default(autoincrement())
-  public_id String
+  public_id String @unique()
   name String
   username String
   summary String

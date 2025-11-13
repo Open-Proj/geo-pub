@@ -4,10 +4,12 @@
     "jsr:@es-toolkit/es-toolkit@^1.39.5": "1.41.0",
     "jsr:@fedify/fedify@^1.1.0": "1.9.1",
     "jsr:@fedify/postgres@^1.9.1": "1.9.1",
+    "jsr:@hono/hono@^4.10.5": "4.10.5",
     "jsr:@logtape/logtape@^1.1.1": "1.2.0",
     "jsr:@logtape/logtape@^1.2.0": "1.2.0",
     "jsr:@std/assert@1": "1.0.15",
     "jsr:@std/internal@^1.0.12": "1.0.12",
+    "npm:@hono/zod-validator@~0.7.4": "0.7.4_hono@4.10.5_zod@4.1.12",
     "npm:@multiformats/base-x@^4.0.1": "4.0.1",
     "npm:@opentelemetry/api@^1.9.0": "1.9.0",
     "npm:@opentelemetry/semantic-conventions@^1.27.0": "1.38.0",
@@ -59,6 +61,9 @@
         "npm:postgres"
       ]
     },
+    "@hono/hono@4.10.5": {
+      "integrity": "13dbf2a528feb8189ad13394b213f0cf5f83b0ba4b2fadd0549993426db9ad2d"
+    },
     "@logtape/logtape@1.2.0": {
       "integrity": "8e1d3af5c91966cc5689cfb17081a36bccfdff28ff6314769185661f5147e74d"
     },
@@ -83,6 +88,13 @@
     },
     "@fastify/busboy@2.1.1": {
       "integrity": "sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA=="
+    },
+    "@hono/zod-validator@0.7.4_hono@4.10.5_zod@4.1.12": {
+      "integrity": "sha512-biKGn3BRJVaftZlIPMyK+HCe/UHAjJ6sH0UyXe3+v0OcgVr9xfImDROTJFLtn9e3XEEAHGZIM9U6evu85abm8Q==",
+      "dependencies": [
+        "hono",
+        "zod"
+      ]
     },
     "@multiformats/base-x@4.0.1": {
       "integrity": "sha512-eMk0b9ReBbV23xXU693TAIrLyeO5iTgBZGSJfpqriG8UkYvr/hC9u9pyMlAakDNHWmbhMZCDs6KQO0jzKD8OTw=="
@@ -277,6 +289,9 @@
       ],
       "bin": true
     },
+    "hono@4.10.5": {
+      "integrity": "sha512-h/MXuTkoAK8NG1EfDp0jI1YLf6yGdDnfkebRO2pwEh5+hE3RAJFXkCsnD0vamSiARK4ZrB6MY+o3E/hCnOyHrQ=="
+    },
     "jiti@2.6.1": {
       "integrity": "sha512-ekilCSN1jwRvIbgeg/57YFh8qQDNbwDb9xT/qu2DAHbFFZUicIl4ygVaAvzveMhMVr3LnpSKTNnwt8PoOfmKhQ==",
       "bin": true
@@ -462,8 +477,10 @@
     "dependencies": [
       "jsr:@fedify/fedify@^1.1.0",
       "jsr:@fedify/postgres@^1.9.1",
+      "jsr:@hono/hono@^4.10.5",
       "jsr:@logtape/logtape@^1.2.0",
       "jsr:@std/assert@1",
+      "npm:@hono/zod-validator@~0.7.4",
       "npm:@prisma/client@^6.19.0",
       "npm:dotenv@^17.2.3",
       "npm:postgres@^3.4.7",

@@ -1,4 +1,4 @@
-import { UserModel } from "../generated/prisma/models/User.ts";
+import { UserModel, UserCreateInput } from "../generated/prisma/models/User.ts";
 import { prisma } from "../database.ts";
 
 /**
@@ -10,4 +10,11 @@ export async function getUserByPublicID(publicID: string): Promise<UserModel | n
       public_id: publicID,
     },
   });
+}
+
+/**
+ * Save a new user.
+ **/
+export async function createUser(input: UserCreateInput): Promise<UserModel> {
+  return await prisma.user.create({ data: input });
 }

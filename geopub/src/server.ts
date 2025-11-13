@@ -1,5 +1,7 @@
 import { configure, getConsoleSink } from "@logtape/logtape";
+import { Hono } from "hono";
 import { federation } from "./federation.ts";
+import { api } from "./api/index.ts";
 
 // Configure logging
 await configure({
@@ -12,4 +14,4 @@ await configure({
 });
 
 // Run server
-Deno.serve(request => federation.fetch(request, { contextData: undefined }));
+Deno.serve(api.fetch);
